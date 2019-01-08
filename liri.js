@@ -8,54 +8,75 @@ var fs = require("fs");
 var spotify = new Spotify(keys.spotify);
 
 //SPOTIFY
-if (process.argv[2] == 'spotify-this-song') {
-    var songName = process.argv.slice(3).join(" ");
+
+var getSong = function(songName) {
+  
     if (songName === undefined) {
-        songName = "The sign by Ace of Base";
+      songName = "the sign"
     }
-}
-
-spotify.search({ type: 'track', query: songName, limit: 10 }, function(err, data) {
-    if (err) {
-      return console.log('Error occurred: ' + err);
-    }
-    
-    var tableArray = [];
-
-    //For loop
-    for(var i = 0; i < data.tracks.items.length; i++){
-        //console.log(data.tracks.items[i]);
-        //console.log("album name: " + data.tracks.items[i].album.name); 
-        var result = {
-            artist: data.tracks.items[i].album.artists[0].name,
-            album_name: data.tracks.items[i].album.name,
-            song_name: data.tracks.items[i].name,
-            preview_url: data.tracks.items[i].preview_url,
+    spotify.search(
+      {
+        type: "track",
+        query: songName,
+        limit: 10
+      },
+      function(err, data) {
+        if (err) {
+          return console.log("Error occurred: " + err);
         }
-        tableArray.push(result);
+  
+        //For loop
+        for (var i = 0; i < data.tracks.items.length; i++) {
+          //console.log(data.tracks.items[i]);
+          //console.log("album name: " + data.tracks.items[i].album.name);
+  
+          console.log(`Artist: ${data.tracks.items[i].album.artists[0].name}`);
+          console.log(`Albumname: ${data.tracks.items[i].album.name}`);
+          console.log(`Song name: ${data.tracks.items[i].name}`);
+          console.log(`Preview url: ${data.tracks.items[i].preview_url}`);
+          console.log("---------------------");
+        }
+      }
+    );
+  };
+  
+  //OMDB
+  var getMovie = function(movieName) {
+    if (movieName === undefined) {
+      movieName = "Mr Nobody"
     }
-    console.log(result);
-  });
-
-//OMDB  
-//} else if (process.argv[2] == 'movie-this') {
-//    var movieName = process.argv.slice(3).join(" ");
-
-//    if (movieName == undefined) {
-//        movieName = "Mr. Nobody";
-//    }
-
-//    request('http://www.omdbapi.com/?i=tt3896198&apikey=97174f8d' + process.argv[3], function(error, response, body) {
-
- //       var result = JSON.parse(body);
- //       console.log("Title :" + result.Title);
- //       console.log("Year :" + result.Released);
- //       console.log("IMDB Rating :" + result.imdbRating );
-  //      console.log("Rotten Tomatoes :" + result.Ratings[1].Value);
-   //     console.log("Country :" +  result.Country);
-    //    console.log("Language :" + result.Language);
- //       console.log("Movie Plot :" + result.Plot);
-   //     console.log("Actors :" +  result.Actors);
-
-    //}
-// });
+  
+    var movieUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&tomatoes=true&apikey=trilogy"
+    axios.get(movieUrl)
+    .then(function (response) {
+      console.log(response.data);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });      
+  }
+  
+  // Switch statement to determine what action to take based on user input in command line
+  var userPick = function(action, userChoice) {
+    switch (action) {
+      case "spotify-this-song":
+        if(userChoice){
+            getSong(userChoice);
+        }else{
+            getSong('Ace of Bass');
+        }
+        break;
+      case "movie-this":
+        getMovie(userChoice);
+        break;
+      default:
+        console.log("Liri does not know that command");
+    }
+  };
+  
+  // Run the command based on the two arguments the user provides
+  var runCommand = function(arg1, arg2) {
+    userPick(arg1, arg2);
+  };
+  
+  runCommand(process.argv[2], process.argv.slice(3).join(" "));
